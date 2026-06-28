@@ -239,6 +239,31 @@ function closeBulkModal(){document.getElementById('bulk-modal').classList.remove
 document.getElementById('slot-form').addEventListener('submit',e=>{e.preventDefault();const d=document.getElementById('slot-date').value,t=document.getElementById('slot-time').value,m=parseInt(document.getElementById('slot-max').value)||1,s=DB.slots,ex=s.find(x=>x.slot_date===d&&x.slot_time===t);if(ex){ex.max_bookings=m;ex.active=true}else s.push({id:DB.nextId(),slot_date:d,slot_time:t,max_bookings:m,active:true,created_at:new Date().toISOString()});DB.slots=s;showToast('Horário criado!','success');closeSlotModal();loadAdminSlots();loadAdmin()});
 document.getElementById('bulk-form').addEventListener('submit',e=>{e.preventDefault();const sd=document.getElementById('bulk-start').value,ed=document.getElementById('bulk-end').value,ts=document.getElementById('bulk-times').value.split('\n').map(t=>t.trim()).filter(Boolean),m=parseInt(document.getElementById('bulk-max').value)||1,dc=document.querySelectorAll('#bulk-form input[type="checkbox"]"),ds=[];dc.forEach(c=>{if(c.checked)ds.push(parseInt(c.value))});if(ts.length===0){showToast('Informe ao menos um horário','error');return}const s=DB.slots;let ct=0;const d=new Date(sd+'T00:00:00'),en=new Date(ed+'T00:00:00');while(d<=en){if(ds.includes(d.getDay())){const ds2=formatDate(d);ts.forEach(t=>{const ex=s.find(x=>x.slot_date===ds2&&x.slot_time===t);if(!ex){s.push({id:DB.nextId(),slot_date:ds2,slot_time:t,max_bookings:m,active:true,created_at:new Date().toISOString()});ct++}})}d.setDate(d.getDate()+1)}DB.slots=s;showToast(ct+' horários criados!','success');closeBulkModal();loadAdminSlots();loadAdmin()});
 if(user)showApp();
+
 </script>
 </body>
 </html>
+// Tente esta versão corrigida do DB.init
+DB.init = function() {
+  if(!localStorage.getItem('ae_initialized')) {
+    this.slots = [];
+    this.appointments = [];
+    localStorage.setItem('ae_next_id', '2');
+  }
+
+  let u = this.users;
+  if(!u.find(x => x.role === 'admin')) {
+    u.push({
+      id: 1,
+      name: 'Administrador',
+      email: 'admin@agendamento.com',
+      password_hash: btoa('admin123'),
+      company_name: 'Deposito Central',
+      phone: '11999999999',
+      role: 'admin',
+      created_at: new Date().toISOString()
+    });
+    this.users = u;
+  }
+  localStorage.setItem('ae_initialized', '1');
+};
