@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendamento de Entregas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --blue:#2563eb;--blue-dark:#1d4ed8;--blue-light:#dbeafe;
+      --green:#16a34a;--green-light:#dcfce7;
+      --red:#dc2626;--red-light:#fee2e2;
+      --amber:#d97706;--amber-light:#fef3c7;
+      --g50:#f8fafc;--g100:#f1f5f9;--g200:#e2e8f0;--g300:#cbd5e1;
+      --g400:#94a3b8;--g500:#64748b;--g600:#475569;--g700:#334155;--g800:#1e293b;--g900:#0f172a;
+      --font:'DM Sans',system-ui,sans-serif;
+      --r:10px;--r-lg:14px;
+      --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+      --sh-lg:0 10px 25px rgba(0,0,0,.1),0 4px 10px rgba(0,0,0,.06);
+    }
+    body{font-family:var(--font);background:var(--g50);color:var(--g800);min-height:100vh}
+    .view{display:none}.view.active{display:block}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border:none;border-radius:var(--r);font:600 14px var(--font);cursor:pointer;transition:all .15s;text-decoration:none}
+    .btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-dark)}
+    .btn-ghost{background:transparent;color:var(--g600)}.btn-ghost:hover{background:var(--g100)}
+    .btn-full{width:100%}.btn-sm{padding:6px 12px;font-size:12px}
+    .btn-icon{background:var(--g100);border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+    .btn-icon:hover{background:var(--g200)}
+    .btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#b91c1c}
+    .btn-success{background:var(--green);color:#fff}.btn-success:hover{background:#15803d}
+    .form-group{margin-bottom:16px}
+    .form-group label{display:block;font-size:13px;font-weight:600;color:var(--g600);margin-bottom:6px}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:1.5px solid var(--g200);border-radius:var(--r);font:400 14px var(--font);background:#fff;transition:border-color .15s}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .auth-container{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 50%,#bfdbfe 100%)}
+    .auth-logo{text-align:center;margin-bottom:2rem}
+    .auth-logo h1{font-family:'Space Grotesk',sans-serif;font-size:28px;color:var(--g900);margin-top:12px}
+    .auth-subtitle{color:var(--g500);font-size:14px;margin-top:4px}
+    .auth-card{background:#fff;border-radius:var(--r-lg);box-shadow:var(--sh-lg);padding:2rem;width:100%;max-width:420px}
+    .auth-tabs{display:flex;gap:0;margin-bottom:1.5rem;background:var(--g100);border-radius:var(--r);padding:4px}
+    .auth-tab{flex:1;padding:10px;border:none;background:transparent;border-radius:8px;font:600 14px var(--font);color:var(--g500);cursor:pointer;transition:all .15s}
+    .auth-tab.active{background:#fff;color:var(--g800);box-shadow:var(--sh)}
+    .auth-form{display:none}.auth-form.active{display:block}
+    .auth-hint{text-align:center;font-size:12px;color:var(--g400);margin-top:12px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px;background:#fff;border-bottom:1px solid var(--g200);position:sticky;top:0;z-index:100}
+    .topbar-left,.topbar-right{display:flex;align-items:center;gap:12px}
+    .logo-sm{display:flex;align-items:center;gap:10px}
+    .logo-sm span{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;color:var(--g800)}
+    .user-badge{font-size:13px;color:var(--g500);padding:4px 12px;background:var(--g100);border-radius:20px}
+    .main-content{max-width:1200px;margin:0 auto;padding:2rem}
+    .page-header{margin-bottom:1.5rem}
+    .page-header h2{font-family:'Space Grotesk',sans-serif;font-size:22px;color:var(--g900)}
+    .page-header p{color:var(--g500);font-size:14px;margin-top:4px}
+    .schedule-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+    .calendar-section,.timeslots-section{background:#fff;border-radius:var(--r-lg);padding:1.5rem;box-shadow:var(--sh)}
+    .calendar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+    .calendar-header h3{font-size:15px;color:var(--g700)}
+    .calendar-days{display:flex;flex-direction:column;gap:6px}
+    .day-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:var(--r);cursor:pointer;transition:all .15s;border:1.5px solid transparent}
+    .day-row:hover{background:var(--blue-light)}
+    .day-row.selected{background:var(--blue-light);border-color:var(--blue)}
+    .day-row .day-name{font-weight:600;font-size:14px;color:var(--g700)}
+    .day-row .day-date{font-size:13px;color:var(--g500)}
+    .day-row .day-slots{font-size:12px;color:var(--blue);font-weight:600}
+    .timeslots-section h3{font-size:15px;color:var(--g700);margin-bottom:1rem}
+    .timeslots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+    .time-chip{padding:10px;text-align:center;border-radius:var(--r);border:1.5px solid var(--g200);cursor:pointer;font-size:14px;font-weight:500;transition:all .15s}
+    .time-chip:hover{border-color:var(--blue);background:var(--blue-light)}
+    .time-chip.full{background:var(--g100);color:var(--g400);cursor:not-allowed;text-decoration:line-through}
+    .appointments-list{display:flex;flex-direction:column;gap:8px}
+    .appt-card{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#fff;border-radius:var(--r);box-shadow:var(--sh)}
+    .appt-info{display:flex;align-items:center;gap:14px}
+    .appt-date{background:var(--blue-light);color:var(--blue);padding:8px 12px;border-radius:8px;text-align:center;min-width:60px}
+    .appt-date .appt-day{font-size:18px;font-weight:700;line-height:1}
+    .appt-date .appt-month{font-size:11px;text-transform:uppercase}
+    .appt-details .appt-time{font-weight:600;font-size:14px;color:var(--g800)}
+    .appt-details .appt-company{font-size:13px;color:var(--g500)}
+    .status-badge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+    .status-scheduled{background:var(--blue-light);color:var(--blue)}
+    .status-completed{background:var(--green-light);color:var(--green)}
+    .status-cancelled{background:var(--red-light);color:var(--red)}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+    .stat-card{background:#fff;border-radius:var(--r-lg);padding:1.25rem;box-shadow:var(--sh)}
+    .stat-card .stat-label{font-size:13px;color:var(--g500);margin-bottom:4px}
+    .stat-card .stat-value{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:var(--g900)}
+    .admin-tabs{display:flex;gap:4px;margin-bottom:1.5rem;background:var(--g100);border-radius:var(--r);padding:4px;width:fit-content}
+    .admin-tab{padding:10px 20px;border:none;background:transparent;border-radius:8px;font:600 13px var(--font);color:var(--g500);cursor:pointer;transition:all .15s}
+    .admin-tab.active{background:#fff;color:var(--g800);box-shadow:var(--sh)}
+    .admin-panel{display:none}.admin-panel.active{display:block}
+    .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+    .panel-header h3{font-size:16px;color:var(--g700)}
+    table{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh)}
+    th{background:var(--g50);padding:12px 16px;text-align:left;font-size:12px;text-transform:uppercase;color:var(--g500);font-weight:600;letter-spacing:.5px}
+    td{padding:12px 16px;border-top:1px solid var(--g100);font-size:14px;color:var(--g700)}
+    tr:hover td{background:var(--g50)}
+    .empty-state{text-align:center;padding:3rem;color:var(--g400);font-size:14px}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+    .modal-overlay.active{display:flex}
+    .modal-card{background:#fff;border-radius:var(--r-lg);padding:2rem;width:100%;max-width:440px;box-shadow:var(--sh-lg)}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+    .modal-header h3{font-size:18px;color:var(--g800)}
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:1.5rem}
+    .bulk-info{font-size:13px;color:var(--g500);margin-bottom:12px;padding:10px;background:var(--blue-light);border-radius:var(--r)}
+    .toast{position:fixed;bottom:2rem;right:2rem;padding:12px 20px;border-radius:var(--r);background:var(--g800);color:#fff;font-size:14px;font-weight:500;transform:translateY(100px);opacity:0;transition:all .3s;z-index:300}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast.error{background:var(--red)}
+    .toast.success{background:var(--green)}
+    @media(max-width:768px){.schedule-grid{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}.form-row{grid-template-columns:1fr}.topbar{padding:0 1rem}.main-content{padding:1rem}}
+  </style>
+</head>
+<body>
+  <div id="auth-view" class="view active">
+    <div class="auth-container">
+      <div class="auth-logo">
+        <svg width="48" height="48" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#2563eb"/><path d="M12 20h16M20 12v16" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+        <h1>AgendaEntregas</h1>
+        <p class="auth-subtitle">Sistema de agendamento de entregas para fornecedores</p>
+      </div>
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Entrar</button>
+          <button class="auth-tab" data-tab="register">Cadastrar</button>
+        </div>
+        <form id="login-form" class="auth-form active">
+          <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="seu@email.com" required></div>
+          <div class="form-group"><label>Senha</label><input type="password" id="login-password" placeholder="Sua senha" required></div>
+          <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+          <p class="auth-hint">Admin: admin@agendamento.com / admin123</p>
+        </form>
+        <form id="register-form" class="auth-form">
+          <div class="form-group"><label>Nome completo</label><input type="text" id="reg-name" placeholder="Seu nome" required></div>
+          <div class="form-group"><label>Empresa</label><input type="text" id="reg-company" placeholder="Nome da empresa" required></div>
+          <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="email@empresa.com" required></div>
+          <div class="form-group"><label>Telefone</label><input type="tel" id="reg-phone" placeholder="(11) 99999-9999"></div>
+          <div class="form-group"><label>Senha</label><input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6"></div>
+          <button type="submit" class="btn btn-primary btn-full">Cadastrar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div id="supplier-view" class="view">
+    <nav class="topbar">
+      <div class="topbar-left"><div class="logo-sm"><svg width="28" height="28" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#2563eb"/><path d="M12 20h16M20 12v16" stroke="white" stroke-width="3" stroke-linecap="round"/></svg><span>AgendaEntregas</span></div></div>
+      <div class="topbar-right"><span class="user-badge" id="supplier-name"></span><button class="btn btn-ghost" onclick="logout()">Sair</button></div>
+    </nav>
+    <main class="main-content">
+      <div class="page-header"><h2>Novo Agendamento</h2><p>Selecione uma data e horário disponível</p></div>
+      <div class="schedule-grid">
+        <div class="calendar-section">
+          <div class="calendar-header"><button class="btn btn-icon" onclick="changeWeek(-1)">&#8592;</button><h3 id="week-label"></h3><button class="btn btn-icon" onclick="changeWeek(1)">&#8594;</button></div>
+          <div id="calendar-days" class="calendar-days"></div>
+        </div>
+        <div class="timeslots-section"><h3 id="selected-date-label">Selecione um dia</h3><div id="timeslots" class="timeslots-grid"></div></div>
+      </div>
+      <div class="page-header" style="margin-top:3rem"><h2>Meus Agendamentos</h2></div>
+      <div id="my-appointments" class="appointments-list"></div>
+    </main>
+  </div>
+  <div id="admin-view" class="view">
+    <nav class="topbar">
+      <div class="topbar-left"><div class="logo-sm"><svg width="28" height="28" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#2563eb"/><path d="M12 20h16M20 12v16" stroke="white" stroke-width="3" stroke-linecap="round"/></svg><span>Admin — AgendaEntregas</span></div></div>
+      <div class="topbar-right"><span class="user-badge">Administrador</span><button class="btn btn-ghost" onclick="logout()">Sair</button></div>
+    </nav>
+    <main class="main-content">
+      <div id="admin-stats" class="stats-row"></div>
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-atab="slots">Horários Disponíveis</button>
+        <button class="admin-tab" data-atab="appointments">Agendamentos</button>
+        <button class="admin-tab" data-atab="history">Histórico (60 dias)</button>
+      </div>
+      <div id="tab-slots" class="admin-panel active">
+        <div class="panel-header"><h3>Gerenciar Horários</h3><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="openBulkModal()">+ Criar em Lote</button><button class="btn btn-primary" onclick="openSlotModal()">+ Novo Horário</button></div></div>
+        <div id="admin-slots-list"></div>
+      </div>
+      <div id="tab-appointments" class="admin-panel"><div class="panel-header"><h3>Agendamentos Ativos</h3></div><div id="admin-appointments-list"></div></div>
+      <div id="tab-history" class="admin-panel"><div class="panel-header"><h3>Histórico (últimos 60 dias)</h3></div><div id="admin-history-list"></div></div>
+    </main>
+  </div>
+  <div id="slot-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header"><h3>Novo Horário Disponível</h3><button class="btn btn-icon" onclick="closeSlotModal()">&times;</button></div>
+      <form id="slot-form">
+        <div class="form-row"><div class="form-group"><label>Data</label><input type="date" id="slot-date" required></div><div class="form-group"><label>Horário</label><input type="time" id="slot-time" required></div></div>
+        <div class="form-group"><label>Vagas simultâneas</label><input type="number" id="slot-max" value="1" min="1" max="20"></div>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" onclick="closeSlotModal()">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div>
+      </form>
+    </div>
+  </div>
+  <div id="bulk-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header"><h3>Criar Horários em Lote</h3><button class="btn btn-icon" onclick="closeBulkModal()">&times;</button></div>
+      <form id="bulk-form">
+        <div class="bulk-info">Cria horários para um intervalo de datas com os mesmos horários.</div>
+        <div class="form-row"><div class="form-group"><label>Data início</label><input type="date" id="bulk-start" required></div><div class="form-group"><label>Data fim</label><input type="date" id="bulk-end" required></div></div>
+        <div class="form-group"><label>Dias da semana</label><div style="display:flex;gap:6px;flex-wrap:wrap"><label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" value="1" checked> Seg</label><label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" value="2" checked> Ter</label><label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" value="3" checked> Qua</label><label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" value="4" checked> Qui</label><label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" value="5" checked> Sex</label><label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" value="6"> Sáb</label><label style="font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" value="0"> Dom</label></div></div>
+        <div class="form-group"><label>Horários (um por linha)</label><textarea id="bulk-times" rows="4" style="width:100%;padding:10px;border:1.5px solid var(--g200);border-radius:var(--r);font:400 14px var(--font);resize:vertical" placeholder="08:00&#10;09:00&#10;10:00" required></textarea></div>
+        <div class="form-group"><label>Vagas por horário</label><input type="number" id="bulk-max" value="1" min="1" max="20"></div>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" onclick="closeBulkModal()">Cancelar</button><button type="submit" class="btn btn-primary">Criar Horários</button></div>
+      </form>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+<script>
+const DB={_get(k){return JSON.parse(localStorage.getItem('ae_'+k)||'[]')},_set(k,v){localStorage.setItem('ae_'+k,JSON.stringify(v))},get users(){return this._get('users')},set users(v){this._set('users',v)},get slots(){return this._get('slots')},set slots(v){this._set('slots',v)},get appointments(){return this._get('appointments')},set appointments(v){this._set('appointments',v)},init(){if(!localStorage.getItem('ae_initialized')){this.slots=[];this.appointments=[];localStorage.setItem('ae_next_id','2')}let u=this.users;if(!u.find(x=>x.role==='admin')){u.push({id:1,name:'Administrador',email:'admin@agendamento.com',password_hash:btoa('admin123'),company_name:'Deposito Central',phone:'11999999999',role:'admin',created_at:new Date().toISOString()});this.users=u}localStorage.setItem('ae_initialized','1')},nextId(){let i=parseInt(localStorage.getItem('ae_next_id')||'2');localStorage.setItem('ae_next_id',String(i+1));return i},cleanHistory(){const c=new Date();c.setDate(c.getDate()-60);const cs=c.toISOString().split('T')[0];this.appointments=this.appointments.filter(a=>a.slot_date>=cs)}};
+DB.init();
+let user=JSON.parse(sessionStorage.getItem('ae_user')||'null'),weekStart=new Date(),selectedDate=null;
+weekStart.setDate(weekStart.getDate()-weekStart.getDay()+1);
+function formatDate(d){return d.toISOString().split('T')[0]}
+function dayName(d){return['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()]}
+function monthName(d){return['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][d.getMonth()]}
+function showToast(m,t=''){const e=document.getElementById('toast');e.textContent=m;e.className='toast show '+t;setTimeout(()=>e.className='toast',3000)}
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function logout(){user=null;sessionStorage.removeItem('ae_user');showView('auth-view')}
+document.querySelectorAll('.auth-tab').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active'));tab.classList.add('active');document.getElementById(tab.dataset.tab==='login'?'login-form':'register-form').classList.add('active')})});
+document.getElementById('login-form').addEventListener('submit',e=>{e.preventDefault();const em=document.getElementById('login-email').value.trim().toLowerCase(),pw=document.getElementById('login-password').value,u=DB.users.find(x=>x.email.toLowerCase()===em&&x.password_hash===btoa(pw));if(!u){showToast('Credenciais inválidas','error');return}user={id:u.id,name:u.name,email:u.email,role:u.role,company_name:u.company_name};sessionStorage.setItem('ae_user',JSON.stringify(user));showApp()});
+document.getElementById('register-form').addEventListener('submit',e=>{e.preventDefault();const n=document.getElementById('reg-name').value,em=document.getElementById('reg-email').value.trim(),pw=document.getElementById('reg-password').value,c=document.getElementById('reg-company').value,p=document.getElementById('reg-phone').value,u=DB.users;if(u.find(x=>x.email===em)){showToast('Email já cadastrado','error');return}const id=DB.nextId();u.push({id,name:n,email:em,password_hash:btoa(pw),company_name:c,phone:p,role:'supplier',created_at:new Date().toISOString()});DB.users=u;user={id,name:n,email:em,role:'supplier',company_name:c};sessionStorage.setItem('ae_user',JSON.stringify(user));showApp();showToast('Cadastro realizado!','success')});
+function showApp(){if(!user)return showView('auth-view');user.role==='admin'?(showView('admin-view'),loadAdmin()):((showView('supplier-view'),document.getElementById('supplier-name').textContent=user.company_name,renderCalendar(),loadMyAppts()))}
+function renderCalendar(){const c=document.getElementById('calendar-days'),we=new Date(weekStart);we.setDate(we.getDate()+6);document.getElementById('week-label').textContent=weekStart.getDate()+' '+monthName(weekStart)+' — '+we.getDate()+' '+monthName(we)+' '+we.getFullYear();const today=formatDate(new Date()),s=DB.slots.filter(x=>x.slot_date>=today&&x.slot_date>=formatDate(weekStart)&&x.slot_date<=formatDate(we)&&x.active!==false),bd={};s.forEach(x=>{if(!bd[x.slot_date])bd[x.slot_date]=[];bd[x.slot_date].push(x)});c.innerHTML='';for(let i=0;i<7;i++){const d=new Date(weekStart);d.setDate(d.getDate()+i);const ds=formatDate(d);if(ds<today)continue;let ds2=bd[ds]||[];if(ds===today){const n=new Date(),ct=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');ds2=ds2.filter(x=>{const t=typeof x.slot_time==='string'?x.slot_time:x.slot_time.substring(0,5);return t>ct})}const r=document.createElement('div');r.className='day-row'+(selectedDate===ds?' selected':'');r.innerHTML='<span class="day-name">'+dayName(d)+'</span><span class="day-date">'+d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'</span><span class="day-slots">'+(ds2.length>0?ds2.length+' horário(s)':'—')+'</span>';r.addEventListener('click',()=>{selectedDate=ds;renderCalendar();const ea=DB.appointments.find(a=>a.supplier_id===user.id&&a.slot_date===ds&&a.status==='scheduled');renderTimeslots(ds2,ea)});c.appendChild(r)}if(selectedDate){let ds2=bd[selectedDate]||[];if(selectedDate===today){const n=new Date(),ct=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');ds2=ds2.filter(x=>{const t=typeof x.slot_time==='string'?x.slot_time:x.slot_time.substring(0,5);return t>ct})}const ea=DB.appointments.find(a=>a.supplier_id===user.id&&a.slot_date===selectedDate&&a.status==='scheduled');renderTimeslots(ds2,ea)}else{document.getElementById('timeslots').innerHTML='';document.getElementById('selected-date-label').textContent='Selecione um dia'}}
+function renderTimeslots(sl,ea){const l=document.getElementById('selected-date-label'),c=document.getElementById('timeslots');l.textContent=selectedDate?'Horários — '+selectedDate.split('-').reverse().join('/'):'Selecione um dia';if(ea){c.innerHTML='<div class="empty-state" style="background:var(--amber-light);padding:2rem;border-radius:var(--r)"><p style="font-weight:600;color:var(--amber);margin-bottom:8px">Limite de 1 agendamento por dia</p><p style="font-size:13px;color:var(--g600)">Você já possui agendamento para este dia às <strong>'+ea.slot_time+'</strong></p></div>';return}if(!sl||sl.length===0){c.innerHTML='<p class="empty-state">Sem horários disponíveis.</p>';return}const ap=DB.appointments.filter(a=>a.slot_date===selectedDate&&a.status==='scheduled');c.innerHTML='';sl.forEach(s=>{const t=typeof s.slot_time==='string'?s.slot_time:s.slot_time.substring(0,5),b=ap.filter(a=>a.slot_time===t).length,f=b>=(s.max_bookings||1),ch=document.createElement('div');ch.className='time-chip'+(f?' full':'');ch.textContent=t;if(!f)ch.addEventListener('click',()=>{if(!confirm('Agendar entrega para '+selectedDate.split('-').reverse().join('/')+' às '+t+'?'))return;const id=DB.nextId(),a=DB.appointments;a.push({id,supplier_id:user.id,slot_date:selectedDate,slot_time:t,status:'scheduled',notes:null,created_at:new Date().toISOString()});DB.appointments=a;showToast('Agendamento realizado!','success');renderCalendar();loadMyAppts()});c.appendChild(ch)})}
+function changeWeek(dir){weekStart.setDate(weekStart.getDate()+dir*7);selectedDate=null;renderCalendar();document.getElementById('timeslots').innerHTML='';document.getElementById('selected-date-label').textContent='Selecione um dia'}
+function loadMyAppts(){const a=DB.appointments.filter(x=>x.supplier_id===user.id).sort((a,b)=>b.slot_date.localeCompare(a.slot_date)||b.slot_time.localeCompare(a.slot_time)),c=document.getElementById('my-appointments');if(a.length===0){c.innerHTML='<p class="empty-state">Nenhum agendamento.</p>';return}const lb={scheduled:'Agendado',completed:'Concluído',cancelled:'Cancelado'};c.innerHTML=a.map(x=>{const d=new Date(x.slot_date+'T00:00:00');return'<div class="appt-card"><div class="appt-info"><div class="appt-date"><div class="appt-day">'+d.getDate()+'</div><div class="appt-month">'+monthName(d)+'</div></div><div class="appt-details"><div class="appt-time">'+x.slot_time+'</div><div class="appt-company">Entrega no depósito</div></div></div><div style="display:flex;gap:8px;align-items:center"><span class="status-badge status-'+x.status+'">'+lb[x.status]+'</span>'+(x.status==='scheduled'?'<button class="btn btn-sm btn-danger" onclick="cancelAppt('+x.id+')">Cancelar</button>':'')+'</div></div>'}).join('')}
+function cancelAppt(id){if(!confirm('Cancelar este agendamento?'))return;const a=DB.appointments.find(x=>x.id===id);if(a)a.status='cancelled';DB.appointments=DB.appointments;showToast('Agendamento cancelado','success');loadMyAppts();renderCalendar()}
+document.querySelectorAll('.admin-tab').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));tab.classList.add('active');document.getElementById('tab-'+tab.dataset.atab).classList.add('active')})});
+function loadAdmin(){DB.cleanHistory();const today=formatDate(new Date()),we=new Date();we.setDate(we.getDate()+7);const ta=DB.appointments.filter(a=>a.slot_date===today&&a.status==='scheduled'),wa=DB.appointments.filter(a=>a.slot_date>=today&&a.slot_date<=formatDate(we)&&a.status==='scheduled'),su=DB.users.filter(u=>u.role==='supplier'),fs=DB.slots.filter(s=>s.slot_date>=today&&s.active!==false);document.getElementById('admin-stats').innerHTML='<div class="stat-card"><div class="stat-label">Entregas Hoje</div><div class="stat-value">'+ta.length+'</div></div><div class="stat-card"><div class="stat-label">Esta Semana</div><div class="stat-value">'+wa.length+'</div></div><div class="stat-card"><div class="stat-label">Fornecedores</div><div class="stat-value">'+su.length+'</div></div><div class="stat-card"><div class="stat-label">Horários Disponíveis</div><div class="stat-value">'+fs.length+'</div></div>';loadAdminSlots();loadAdminAppts();loadAdminHistory()}
+function loadAdminSlots(){const today=formatDate(new Date()),fe=new Date();fe.setDate(fe.getDate()+30),s=DB.slots.filter(x=>x.slot_date>=today&&x.slot_date<=formatDate(fe)&&x.active!==false).sort((a,b)=>a.slot_date.localeCompare(b.slot_date)||a.slot_time.localeCompare(b.slot_time)),c=document.getElementById('admin-slots-list');if(s.length===0){c.innerHTML='<p class="empty-state">Nenhum horário configurado.</p>';return}c.innerHTML='<table><thead><tr><th>Data</th><th>Horário</th><th>Vagas</th><th>Ações</th></tr></thead><tbody>'+s.map(x=>'<tr><td>'+x.slot_date.split('-').reverse().join('/')+'</td><td>'+x.slot_time+'</td><td>'+(x.max_bookings||1)+'</td><td style="display:flex;gap:6px"><button class="btn btn-sm btn-ghost" onclick="editSlot('+x.id+')">Editar</button><button class="btn btn-sm btn-danger" onclick="deleteSlot('+x.id+')">Remover</button></td></tr>').join('')+'</tbody></table>'}
+function loadAdminAppts(){const a=DB.appointments.filter(x=>x.status==='scheduled').sort((a,b)=>a.slot_date.localeCompare(b.slot_date)||a.slot_time.localeCompare(b.slot_time)),c=document.getElementById('admin-appointments-list');if(a.length===0){c.innerHTML='<p class="empty-state">Nenhum agendamento ativo.</p>';return}c.innerHTML='<table><thead><tr><th>Data</th><th>Horário</th><th>Fornecedor</th><th>Empresa</th><th>Telefone</th><th>Ações</th></tr></thead><tbody>'+a.map(x=>{const u=DB.users.find(u=>u.id===x.supplier_id)||{};return'<tr><td>'+x.slot_date.split('-').reverse().join('/')+'</td><td>'+x.slot_time+'</td><td>'+(u.name||'—')+'</td><td>'+(u.company_name||'—')+'</td><td>'+(u.phone||'—')+'</td><td style="display:flex;gap:6px"><button class="btn btn-sm btn-success" onclick="completeAppt('+x.id+')">Concluir</button><button class="btn btn-sm btn-danger" onclick="cancelAdminAppt('+x.id+')">Cancelar</button></td></tr>'}).join('')+'</tbody></table>'}
+function loadAdminHistory(){const co=new Date();co.setDate(co.getDate()-60);const cs=formatDate(co),a=DB.appointments.filter(x=>x.slot_date>=cs).sort((a,b)=>b.slot_date.localeCompare(a.slot_date)||b.slot_time.localeCompare(a.slot_time)),c=document.getElementById('admin-history-list');if(a.length===0){c.innerHTML='<p class="empty-state">Sem registros.</p>';return}const lb={scheduled:'Agendado',completed:'Concluído',cancelled:'Cancelado'};c.innerHTML='<table><thead><tr><th>Data</th><th>Horário</th><th>Fornecedor</th><th>Empresa</th><th>Status</th></tr></thead><tbody>'+a.map(x=>{const u=DB.users.find(u=>u.id===x.supplier_id)||{};return'<tr><td>'+x.slot_date.split('-').reverse().join('/')+'</td><td>'+x.slot_time+'</td><td>'+(u.name||'—')+'</td><td>'+(u.company_name||'—')+'</td><td><span class="status-badge status-'+x.status+'">'+lb[x.status]+'</span></td></tr>'}).join('')+'</tbody></table>'}
+function completeAppt(id){const a=DB.appointments.find(x=>x.id===id);if(a)a.status='completed';showToast('Marcado como concluído','success');loadAdminAppts();loadAdminHistory();loadAdmin()}
+function cancelAdminAppt(id){if(!confirm('Cancelar este agendamento?'))return;const a=DB.appointments.find(x=>x.id===id);if(a)a.status='cancelled';showToast('Agendamento cancelado','success');loadAdminAppts();loadAdminHistory();loadAdmin()}
+function deleteSlot(id){if(!confirm('Remover este horário?'))return;DB.slots=DB.slots.filter(s=>s.id!==id);showToast('Horário removido','success');loadAdminSlots();loadAdmin()}
+function editSlot(id){const s=DB.slots.find(x=>x.id===id);if(!s)return;const nd=prompt('Nova data (AAAA-MM-DD):',s.slot_date);if(nd===null)return;const nt=prompt('Novo horário (HH:MM):',s.slot_time);if(nt===null)return;const nm=prompt('Vagas:',s.max_bookings||1);if(nm===null)return;s.slot_date=nd;s.slot_time=nt;s.max_bookings=parseInt(nm)||1;showToast('Horário atualizado','success');loadAdminSlots()}
+function openSlotModal(){document.getElementById('slot-modal').classList.add('active')}
+function closeSlotModal(){document.getElementById('slot-modal').classList.remove('active')}
+function openBulkModal(){document.getElementById('bulk-modal').classList.add('active')}
+function closeBulkModal(){document.getElementById('bulk-modal').classList.remove('active')}
+document.getElementById('slot-form').addEventListener('submit',e=>{e.preventDefault();const d=document.getElementById('slot-date').value,t=document.getElementById('slot-time').value,m=parseInt(document.getElementById('slot-max').value)||1,s=DB.slots,ex=s.find(x=>x.slot_date===d&&x.slot_time===t);if(ex){ex.max_bookings=m;ex.active=true}else s.push({id:DB.nextId(),slot_date:d,slot_time:t,max_bookings:m,active:true,created_at:new Date().toISOString()});DB.slots=s;showToast('Horário criado!','success');closeSlotModal();loadAdminSlots();loadAdmin()});
+document.getElementById('bulk-form').addEventListener('submit',e=>{e.preventDefault();const sd=document.getElementById('bulk-start').value,ed=document.getElementById('bulk-end').value,ts=document.getElementById('bulk-times').value.split('\n').map(t=>t.trim()).filter(Boolean),m=parseInt(document.getElementById('bulk-max').value)||1,dc=document.querySelectorAll('#bulk-form input[type="checkbox"]"),ds=[];dc.forEach(c=>{if(c.checked)ds.push(parseInt(c.value))});if(ts.length===0){showToast('Informe ao menos um horário','error');return}const s=DB.slots;let ct=0;const d=new Date(sd+'T00:00:00'),en=new Date(ed+'T00:00:00');while(d<=en){if(ds.includes(d.getDay())){const ds2=formatDate(d);ts.forEach(t=>{const ex=s.find(x=>x.slot_date===ds2&&x.slot_time===t);if(!ex){s.push({id:DB.nextId(),slot_date:ds2,slot_time:t,max_bookings:m,active:true,created_at:new Date().toISOString()});ct++}})}d.setDate(d.getDate()+1)}DB.slots=s;showToast(ct+' horários criados!','success');closeBulkModal();loadAdminSlots();loadAdmin()});
+if(user)showApp();
+</script>
+</body>
+</html>
